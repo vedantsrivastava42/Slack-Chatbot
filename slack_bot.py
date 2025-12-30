@@ -11,6 +11,7 @@ from slack_bolt.adapter.socket_mode import SocketModeHandler
 from slack_sdk.web import WebClient
 from dotenv import load_dotenv
 from query_service import query_codebase, DEFAULT_REPOSITORY_PATH, DEFAULT_TIMEOUT
+from lambda_memory import LambdaMemoryManager
 
 load_dotenv()
 
@@ -23,6 +24,10 @@ if not SLACK_BOT_TOKEN or not SLACK_APP_TOKEN:
 ssl_context = ssl.create_default_context(cafile=certifi.where())
 web_client = WebClient(token=SLACK_BOT_TOKEN, ssl=ssl_context)
 app = App(client=web_client)
+
+# Initialize memory manager with configurable message limit
+MAX_CONVERSATION_MESSAGES = int(os.getenv("MAX_CONVERSATION_MESSAGES", "10"))
+memory_manager = LambdaMemoryManager(max_messages=MAX_CONVERSATION_MESSAGES)
 
 def extract_query_from_mention(text: str, bot_user_id: str) -> str:
     """Extract the actual query from a Slack mention message"""
@@ -43,12 +48,24 @@ def handle_app_mention(event, say):
             say("Hi! I'm ready to help you query the codebase. Just mention me with your question!")
             return
 
+        # Generate session ID for this conversation
+        user_id = event.get("user", "")
+        channel_id = event.get("channel", "")
+        thread_ts = event.get("thread_ts") or event.get("ts")
+        session_id = memory_manager.get_session_id(user_id, channel_id, thread_ts)
+        
+        # Store user message in memory
+        memory_manager.add_message(session_id, "user", query)
+        
+        # Retrieve conversation context
+        conversation_context = memory_manager.get_formatted_context(session_id)
+
         try:
             app.client.reactions_add(channel=event["channel"], timestamp=event["ts"], name="eyes")
         except Exception:
             pass
         
-        result = query_codebase(query, DEFAULT_REPOSITORY_PATH, DEFAULT_TIMEOUT)
+        result = query_codebase(query, DEFAULT_REPOSITORY_PATH, DEFAULT_TIMEOUT, conversation_context)
 
         try:
             app.client.reactions_remove(channel=event["channel"], timestamp=event["ts"], name="eyes")
@@ -56,6 +73,8 @@ def handle_app_mention(event, say):
             pass
         
         if result["success"]:
+            # Store bot response in memory
+            memory_manager.add_message(session_id, "assistant", result["response"])
             say(text=result["response"], thread_ts=event["ts"])
         else:
             say(text=f"Sorry, I encountered an error: {result.get('error', 'Unknown error')}", thread_ts=event["ts"])
@@ -84,12 +103,24 @@ def handle_message(event, say):
             say("Hi! I'm ready to help you query the codebase. Just send me your question!")
             return
         
+        # Generate session ID for this conversation
+        user_id = event.get("user", "")
+        channel_id = event.get("channel", "")
+        thread_ts = event.get("thread_ts") or event.get("ts")
+        session_id = memory_manager.get_session_id(user_id, channel_id, thread_ts)
+        
+        # Store user message in memory
+        memory_manager.add_message(session_id, "user", query)
+        
+        # Retrieve conversation context
+        conversation_context = memory_manager.get_formatted_context(session_id)
+        
         try:
             app.client.reactions_add(channel=event["channel"], timestamp=event["ts"], name="hourglass_flowing_sand")
         except Exception:
             pass
         
-        result = query_codebase(query, DEFAULT_REPOSITORY_PATH, DEFAULT_TIMEOUT)
+        result = query_codebase(query, DEFAULT_REPOSITORY_PATH, DEFAULT_TIMEOUT, conversation_context)
         
         try:
             app.client.reactions_remove(channel=event["channel"], timestamp=event["ts"], name="hourglass_flowing_sand")
@@ -97,6 +128,8 @@ def handle_message(event, say):
             pass
         
         if result["success"]:
+            # Store bot response in memory
+            memory_manager.add_message(session_id, "assistant", result["response"])
             say(text=result["response"])
         else:
             say(text=f"Sorry, I encountered an error: {result.get('error', 'Unknown error')}")

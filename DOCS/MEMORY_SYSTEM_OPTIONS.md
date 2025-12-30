@@ -42,7 +42,7 @@ User: "JWT"  ← Bot doesn't remember the original question!
 
 **Cost:** Free
 
-#### **Lambda Container Memory Variant** ⭐⭐⭐ (Recommended for Serverless)
+### **Lambda Container Memory Variant** ⭐⭐⭐ (Recommended for Serverless, We implemented this) 
 
 **Perfect for your use case - maintains conversation context without any extra cost!**
 

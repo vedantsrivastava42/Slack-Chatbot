@@ -19,15 +19,26 @@ gemini_client = OpenAI(
 
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "models/gemini-flash-latest")
 
-def process_with_ai(raw_response: str, user_query: str) -> str:
+def process_with_ai(raw_response: str, user_query: str, conversation_context: str = None) -> str:
 
     try:
-        # Create a prompt that includes the user's query and the raw response
+        # Build base prompt
         prompt = f"""You are a helpful code assistant. A user asked: "{user_query}"
 
 The codebase query tool returned the following response:
 
-{raw_response}
+{raw_response}"""
+        
+        # Include conversation history if available
+        if conversation_context:
+            prompt += f"""
+
+Conversation History:
+{conversation_context}
+
+Please use the conversation history to understand the context of follow-up questions. If this is a follow-up question, refer back to previous messages to provide a coherent answer."""
+        
+        prompt += """
 
 Please provide a clear, concise, and helpful answer to the user's question based on the information above.
 
