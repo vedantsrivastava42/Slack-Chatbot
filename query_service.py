@@ -38,11 +38,24 @@ def query_codebase(query: str, repository_path: str, timeout: int = 60000, conve
             context_str = "\n\nPrevious conversation:\n" + conversation_context
             enhanced_query = query + context_str
         
-        # Execute cursor-agent
-        escaped_query = enhanced_query.replace('"', '\\"').replace('$', '\\$')
-        cmd = f'cursor-agent --print --output-format json --workspace "{repository_path}" "{escaped_query}"'
-        
-        process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, cwd=repository_path)
+        # Execute cursor-agent using list arguments (prevents command injection)
+        # Note: No shell=True, no string escaping needed - subprocess handles arguments safely
+        process = subprocess.Popen(
+            [
+                'cursor-agent',
+                '--print',
+                '--output-format',
+                'json',
+                '--workspace',
+                repository_path,
+                enhanced_query  # Query passed as single argument, safe from injection
+            ],
+            shell=False,  # Critical: Prevents command injection
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            cwd=repository_path
+        )
         
         try:
             stdout_data, stderr_data = process.communicate(timeout=timeout / 1000)
