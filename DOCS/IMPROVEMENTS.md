@@ -43,7 +43,7 @@ except TimeoutError as e:
 
 ### 2. **Security Vulnerabilities**
 
-#### 2.1 Command Injection Risk
+#### 2.1 Command Injection Risk ✅ FIXED
 **Location:** `query_service.py:43`
 ```python
 cmd = f'cursor-agent --print --output-format json --workspace "{repository_path}" "{escaped_query}"'
@@ -62,7 +62,7 @@ process = subprocess.Popen(
 )
 ```
 
-#### 2.2 Environment Variable Exposure
+#### 2.2 Environment Variable Exposure ✅ FIXED
 **Issue:** No validation of required env vars at startup
 **Fix:** Add startup validation and fail fast
 
@@ -81,16 +81,23 @@ process = subprocess.Popen(
 
 ## ⚠️ High Priority Improvements
 
-### 4. **Code Duplication**
+### 4. **Code Duplication** ✅ FIXED
 **Issue:** `handle_app_mention()` and `handle_message()` have 90% duplicate code
-**Fix:** Extract common logic into shared function
+**Status:** ✅ Fixed - Extracted common logic into `process_query()` function
 
-```python
-def process_query(event, say, is_threaded=True):
-    """Shared query processing logic"""
-    # Extract common logic here
-    pass
-```
+**Solution Implemented:**
+- Created `process_query()` function that handles all shared logic:
+  - Session ID generation
+  - Memory management (storing user messages and bot responses)
+  - Conversation context retrieval
+  - Query execution
+  - Reaction indicators
+  - Response handling
+- Both handlers now call `process_query()` with different parameters:
+  - `handle_app_mention()`: Uses "eyes" emoji, thread replies
+  - `handle_message()`: Uses "hourglass_flowing_sand" emoji, direct replies
+
+**Code Location:** `slack_bot.py:38-78`
 
 ---
 

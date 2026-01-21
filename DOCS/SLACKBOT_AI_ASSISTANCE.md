@@ -1,4 +1,4 @@
-# RFC: Slack-Native Read-Only AI Assistant
+# RFC: Slack-Native AI Assistant
 
 **Status:** Draft
 **Date:** 2024-12-31
