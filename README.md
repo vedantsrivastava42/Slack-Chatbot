@@ -35,6 +35,9 @@ A Slack bot that queries codebases using `cursor-agent`. Ask questions about you
    # Service Configuration
    DEFAULT_REPOSITORY_PATH=/path/to/your/repository
    ENABLE_READONLY_ENFORCEMENT=true
+   
+   # Cursor Agent Configuration (optional)
+   CURSOR_AGENT_MODEL=auto  # Use 'auto' mode to avoid Opus usage limits (default: auto)
    ```
 
 4. **Run the Slack bot:**
@@ -72,6 +75,7 @@ The bot will:
 - `GEMINI_MODEL` - Gemini model to use (default: `models/gemini-flash-latest`)
 - `DEFAULT_REPOSITORY_PATH` - Path to your codebase repository (required)
 - `ENABLE_READONLY_ENFORCEMENT` - Enable read-only protection (default: `true`)
+- `CURSOR_AGENT_MODEL` - Cursor agent model to use (default: `auto`). Use `auto` to avoid Opus usage limits. Run `cursor-agent models` to see available models.
 
 ## Architecture
 

@@ -40,12 +40,16 @@ def query_codebase(query: str, repository_path: str, timeout: int = 60000, conve
         
         # Execute cursor-agent using list arguments (prevents command injection)
         # Note: No shell=True, no string escaping needed - subprocess handles arguments safely
+        # Use 'auto' model to avoid Opus usage limits
+        cursor_model = os.getenv("CURSOR_AGENT_MODEL", "auto")
         process = subprocess.Popen(
             [
                 'cursor-agent',
                 '--print',
                 '--output-format',
                 'json',
+                '--model',
+                cursor_model,
                 '--workspace',
                 repository_path,
                 enhanced_query  # Query passed as single argument, safe from injection

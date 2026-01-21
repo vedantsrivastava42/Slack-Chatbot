@@ -1,7 +1,7 @@
-# Slack AI Codebase Assistant - Demo Guide
+# Slack AI Codebase Assistant - 
 
 **Status:** MVP / Demo Version  
-**Date:** 2024-12-31  
+**Date:** 21/01/26
 **Purpose:** Demo for team feedback and suggestions
 
 ---
@@ -9,31 +9,6 @@
 ## 🎯 What This Is
 
 A Slack bot that answers questions about your codebase using AI. Ask it questions in Slack, get instant answers about your code, schemas, and logic.
-
----
-
-## 🚀 Quick Demo (2 minutes)
-
-### Demo Scenario 1: Code Understanding
-**In Slack channel:**
-```
-@BotName what is the User model?
-```
-**Bot responds with:** Model structure, relationships, key methods
-
-### Demo Scenario 2: Schema Query
-**In Slack channel:**
-```
-@BotName how does users table connect to subscriptions?
-```
-**Bot responds with:** Database relationships and foreign keys
-
-### Demo Scenario 3: Business Logic
-**In Slack channel:**
-```
-@BotName how is user authentication handled?
-```
-**Bot responds with:** Authentication flow, key files, implementation details
 
 ---
 
@@ -72,9 +47,8 @@ Slack → Socket Mode → slack_bot.py → cursor-agent → Gemini API → Respo
 
 ### ⚠️ Known Limitations
 - In-memory storage (lost on restart)
-- No structured logging yet
 - No rate limiting
-- No channel access restrictions (works in any channel)
+- No channel access restrictions (works in any channel) 
 
 ### 🔄 Planned Improvements
 - See `IMPROVEMENTS.md` for full list
@@ -84,40 +58,32 @@ Slack → Socket Mode → slack_bot.py → cursor-agent → Gemini API → Respo
 
 ## 💰 Cost Estimate
 
-**Current Usage (MVP):**
-- AWS Lambda: $0 (free tier)
-- Gemini API: ~$1-5/month (depends on usage)
-- Cursor Subscription: $20/month (or $0 if using existing)
-- **Total: ~$21-25/month** (or $1-5/month with existing Cursor)
+**Note:** Using GPT-4o-mini for response formatting (simple structuring task, no complex reasoning needed)
 
----
+### Scenario A: Pilot (10 Users, ~10 queries/day)
 
-## 🎯 What We Need Feedback On
+| Component | Cost | Notes |
+|:----------|:-----|:------|
+| AWS Lambda & API Gateway | $0.00 | Well within AWS Free Tier (1M requests/month) |
+| OpenAI API (GPT-4o-mini) | ~$1.50/month | ~30k context/query (formatting only) |
+| Cursor Subscription | $20.00/month | Fixed cost for cursor-agent access |
+| **Total** | **~$22.00/month** | |
+| **Effective Cost** | **<$2.00/month** | *If using existing Cursor account* |
 
-1. **Use Cases** - What questions do you want to ask?
-2. **Accuracy** - Are the answers helpful and correct?
-3. **Response Time** - Is 30-90 seconds acceptable?
-4. **Access Control** - Should we restrict to specific channels?
-5. **Features** - What's missing? What would make it more useful?
+### Scenario B: Scale (50 Users, ~100 queries/day)
 
----
+| Component | Cost | Notes |
+|:----------|:-----|:------|
+| AWS Lambda & API Gateway | <$2.00/month | Exceeds free tier slightly if complex |
+| OpenAI API (GPT-4o-mini) | ~$15–$20/month | Higher volume, same per-query cost |
+| Cursor Subscription | $20.00/month | Fixed cost for cursor-agent access |
+| **Total** | **<$45.00/month** | |
+| **Effective Cost** | **$20–25/month** | *If using existing Cursor account* |
 
-## 🧪 How to Test
-
-1. **Join a channel** where the bot is invited
-2. **Mention the bot:** `@BotName [your question]`
-3. **Wait for response** (shows 👀 emoji while processing)
-4. **Try follow-up questions** in the same thread
-
----
-
-## 📝 Feedback Form
-
-After the demo, please share:
-- ✅ What worked well?
-- ❌ What didn't work?
-- 💡 What features would you add?
-- 🚀 Would you use this regularly?
+**Key Points:**
+- LLM is used only for formatting/structuring cursor-agent responses (simple task)
+- GPT-4o-mini is sufficient and cost-effective for this use case
+- Cursor subscription is the main fixed cost (can be shared across team)
 
 ---
 
@@ -145,24 +111,3 @@ A: Currently yes, but we plan to restrict to engineering channels.
 
 **Q: What if it gives wrong answers?**  
 A: It cites sources. Always verify critical information. It's an assistant, not an oracle.
-
----
-
-## 🎬 Demo Script (5 minutes)
-
-1. **Introduction** (30 sec)
-   - "This is a Slack bot that answers codebase questions using AI"
-
-2. **Live Demo** (2 min)
-   - Show 2-3 example queries
-   - Demonstrate conversation context (follow-up question)
-
-3. **Architecture Overview** (1 min)
-   - Quick diagram of how it works
-   - Mention read-only safety
-
-4. **Q&A & Feedback** (1.5 min)
-   - Collect suggestions
-   - Discuss use cases
-
----
