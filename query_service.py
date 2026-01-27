@@ -23,7 +23,7 @@ DEFAULT_TIMEOUT = 600000  # milliseconds
 ENABLE_READONLY_ENFORCEMENT = os.getenv("ENABLE_READONLY_ENFORCEMENT", "true").lower() == "true"
 
 
-def query_codebase(query: str, repository_path: str, timeout: int = 60000) -> dict:
+def query_codebase(query: str, repository_path: str, timeout: int = 60000, conversation_context: str = None) -> dict:
     """Query codebase using cursor-agent with read-only protection"""
     start_time = time.time()
     
@@ -32,11 +32,34 @@ def query_codebase(query: str, repository_path: str, timeout: int = 60000) -> di
         if ENABLE_READONLY_ENFORCEMENT:
             subprocess.run(["chmod", "-R", "a-w", repository_path], capture_output=True, timeout=30)
         
-        # Execute cursor-agent
-        escaped_query = query.replace('"', '\\"').replace('$', '\\$')
-        cmd = f'cursor-agent --print --output-format json --workspace "{repository_path}" "{escaped_query}"'
+        # Build enhanced query with conversation context
+        enhanced_query = query
+        if conversation_context:
+            context_str = "\n\nPrevious conversation:\n" + conversation_context
+            enhanced_query = query + context_str
         
-        process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, cwd=repository_path)
+        # Execute cursor-agent using list arguments (prevents command injection)
+        # Note: No shell=True, no string escaping needed - subprocess handles arguments safely
+        # Use 'auto' model to avoid Opus usage limits
+        cursor_model = os.getenv("CURSOR_AGENT_MODEL", "auto")
+        process = subprocess.Popen(
+            [
+                'cursor-agent',
+                '--print',
+                '--output-format',
+                'json',
+                '--model',
+                cursor_model,
+                '--workspace',
+                repository_path,
+                enhanced_query  # Query passed as single argument, safe from injection
+            ],
+            shell=False,  # Critical: Prevents command injection
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            cwd=repository_path
+        )
         
         try:
             stdout_data, stderr_data = process.communicate(timeout=timeout / 1000)
@@ -55,8 +78,8 @@ def query_codebase(query: str, repository_path: str, timeout: int = 60000) -> di
             except json.JSONDecodeError:
                 raw_response = stdout_data.strip() or stderr_data.strip() or "Empty response"
             
-            # Process the raw response through AI service
-            processed_response = process_with_ai(raw_response, query)
+            # Process the raw response through AI service with conversation context
+            processed_response = process_with_ai(raw_response, query, conversation_context)
             
             return {"success": True, "response": processed_response, "executionTime": execution_time}
         else:
