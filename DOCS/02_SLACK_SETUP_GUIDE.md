@@ -6,7 +6,7 @@ This guide will walk you through setting up the Slack bot for the Codebase Query
 
 ### Step 1: Create a Slack App (0:20-0:34)
 
-1. Navigate to [api.slack.com](https://api.slack.com)
+1. Navigate to [api.slack.com](https://api.slack.com/apps)
 2. Click **"Your Apps"** in the top right corner
 3. Click **"Create an App"**
 4. Select **"From scratch"**
@@ -34,12 +34,12 @@ This guide will walk you through setting up the Slack bot for the Codebase Query
    - `app_mentions:read` - Read mentions of your app
    - `channels:history` - View messages in public channels
    - `chat:write` - Send messages as the bot
-   - `groups:history` - View messages in private channels
-   - `mpim:history` - View messages in group DMs
    - `reactions:write` - Add reactions to messages
    - `im:history` - View messages in DMs
    - `im:read` - View basic information about DMs
    - `im:write` - Send messages in DMs
+   - `groups:history` - View messages in private channels
+   - `mpim:history` - View messages in group DMs
 
 ### Step 4: Install the App to Workspace (1:35-1:43)
 

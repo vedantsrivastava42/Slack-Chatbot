@@ -14,7 +14,7 @@ This is required because **cursor-agent needs a persistent, authenticated machin
 ## 1. Launch EC2
 
 * AMI: **Ubuntu 22.04**
-* Instance: **t3.small** (or t3.medium)
+* Instance: **t4g.medium**
 * Disk: **25 GB**
 * Security group:
 
@@ -36,9 +36,11 @@ sudo apt install -y git python3.11 python3.11-venv python3-pip nodejs npm
 ## 3. Install & authenticate cursor-agent
 
 ```bash
-npm install -g @cursor/cli
+curl https://cursor.com/install -fsSL | bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
 cursor-agent status
-cursor auth login
+cursor-agent auth login
 cursor-agent status
 ```
 
