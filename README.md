@@ -85,4 +85,6 @@ Slack → Socket Mode → slack_bot.py → query_codebase() → cursor-agent →
 
 ## Deployment
 
-For serverless deployment options, see deployment documentation.
+- **EC2 (recommended for this bot):** See [DOCS/EC2_DEPLOYMENT_GUIDE.md](DOCS/EC2_DEPLOYMENT_GUIDE.md) for a step-by-step guide (10–50 users).
+- Serverless vs EC2 and codebase storage: see [DOCS/DEPLOYMENT_EC2_VS_SERVERLESS.md](DOCS/DEPLOYMENT_EC2_VS_SERVERLESS.md).
+- Lambda/serverless outline: see [DOCS/DEPLOYMENT_GUIDE.md](DOCS/DEPLOYMENT_GUIDE.md).

@@ -6,7 +6,7 @@ This document outlines potential scalability issues and bottlenecks at different
 
 ### Components
 - **Slack Bot**: Socket Mode handler (slack_bot.py)
-- **Memory Manager**: In-memory conversation storage (lambda_memory.py)
+- **Memory Manager**: In-memory conversation storage (memory_manager.py)
 - **Query Service**: cursor-agent subprocess execution (query_service.py)
 - **AI Service**: Gemini API integration (ai_service.py)
 

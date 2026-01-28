@@ -11,7 +11,7 @@ from slack_bolt.adapter.socket_mode import SocketModeHandler
 from slack_sdk.web import WebClient
 from dotenv import load_dotenv
 from query_service import query_codebase, DEFAULT_REPOSITORY_PATH, DEFAULT_TIMEOUT
-from lambda_memory import LambdaMemoryManager
+from memory_manager import MemoryManager
 
 load_dotenv()
 
@@ -27,7 +27,7 @@ app = App(client=web_client)
 
 # Initialize memory manager with configurable message limit
 MAX_CONVERSATION_MESSAGES = int(os.getenv("MAX_CONVERSATION_MESSAGES", "10"))
-memory_manager = LambdaMemoryManager(max_messages=MAX_CONVERSATION_MESSAGES)
+memory_manager = MemoryManager(max_messages=MAX_CONVERSATION_MESSAGES)
 
 def extract_query_from_mention(text: str, bot_user_id: str) -> str:
     """Extract the actual query from a Slack mention message"""

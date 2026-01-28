@@ -1,11 +1,12 @@
 """
-    In-memory conversation storage for Lambda/Serverless deployments.
-    Memory persists for the duration of the Lambda execution.
+    In-memory conversation storage for the Slack bot.
+    On EC2, memory persists for the life of the process. Suitable for single-instance deployment.
 """
 
 import time
 
-class LambdaMemoryManager:
+
+class MemoryManager:
 
     def __init__(self, max_messages=10):
         self.conversations = {}  # session_id -> list of messages
