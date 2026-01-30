@@ -98,8 +98,8 @@ After=network.target
 
 [Service]
 User=ubuntu
-WorkingDirectory=/home/ubuntu/app/slack-bot/CHATBOT SERVICE
-ExecStart=/home/ubuntu/app/slack-bot/CHATBOT SERVICE/venv/bin/python slack_bot.py
+WorkingDirectory=/home/ubuntu/Slack-Chatbot
+ExecStart=/home/ubuntu/Slack-Chatbot/venv/bin/python slack_bot.py
 Restart=always
 
 [Install]
@@ -107,11 +107,27 @@ WantedBy=multi-user.target
 ```
 
 ```bash
+# Reload systemd so it picks up the new/edited service file
 sudo systemctl daemon-reload
+# Start the service on every boot (survives EC2 reboot)
 sudo systemctl enable slack-bot
+# Start the service now (runs in background)
 sudo systemctl start slack-bot
+# Stream live logs (Ctrl+C to exit; service keeps running)
 journalctl -u slack-bot -f
 ```
+
+### Other important commands
+
+| Goal | Command |
+|------|--------|
+| **Stop** the app | `sudo systemctl stop slack-bot` |
+| **Restart** (e.g. after code or `.env` change) | `sudo systemctl restart slack-bot` |
+| **Check status** (running/stopped, recent logs) | `sudo systemctl status slack-bot` |
+| **Disable** (don’t start on boot) | `sudo systemctl disable slack-bot` |
+| **Re-enable** (start on boot again) | `sudo systemctl enable slack-bot` |
+| **Recent logs** (no follow) | `journalctl -u slack-bot -n 100` |
+| **Reload** (after editing the `.service` file) | `sudo systemctl daemon-reload` then `sudo systemctl restart slack-bot` |
 
 ---
 
