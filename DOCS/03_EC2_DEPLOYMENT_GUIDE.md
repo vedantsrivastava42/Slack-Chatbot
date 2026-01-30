@@ -28,7 +28,7 @@ This is required because **cursor-agent needs a persistent, authenticated machin
 ```bash
 ssh -i KEY.pem ubuntu@PUBLIC_IP
 sudo apt update && sudo apt upgrade -y
-sudo apt install -y git python3.11 python3.11-venv python3-pip nodejs npm
+sudo apt install -y git python3.12 python3.12-venv python3-pip nodejs npm
 ```
 
 ---
@@ -66,7 +66,7 @@ git clone YOUR_CODEBASE_REPO ~/codebase
 
 ```bash
 cd ~/app/slack-bot/CHATBOT\ SERVICE
-python3.11 -m venv venv
+python3.12 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
