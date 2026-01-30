@@ -98,6 +98,7 @@ After=network.target
 
 [Service]
 User=ubuntu
+Environment="PATH=/home/ubuntu/.local/bin:/usr/bin:/bin"
 WorkingDirectory=/home/ubuntu/Slack-Chatbot
 ExecStart=/home/ubuntu/Slack-Chatbot/venv/bin/python slack_bot.py
 Restart=always
