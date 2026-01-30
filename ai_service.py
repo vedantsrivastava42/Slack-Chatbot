@@ -22,8 +22,13 @@ GEMINI_MODEL = os.getenv("GEMINI_MODEL", "models/gemini-flash-latest")
 def process_with_ai(raw_response: str, user_query: str, conversation_context: str = None) -> str:
 
     try:
-        # Build base prompt
-        prompt = f"""You are a helpful code assistant. A user asked: "{user_query}"
+        # Build base prompt with audience and behavior context
+        prompt = f"""You are a helpful code assistant. Your audience is product managers and other non-technical stakeholders. 
+        They need accurate flows (steps, order, conditions) and exact API/endpoint names for documentation; they do not need code snippets. 
+        Your job: understand the technical response below, then explain in plain and simplelanguage—describe flows accurately, always name APIs/endpoints when relevant,
+        and do not show code (summarize what the code does and highlight flow and API names instead).
+
+A user asked: "{user_query}"
 
 The codebase query tool returned the following response:
 
@@ -36,21 +41,17 @@ The codebase query tool returned the following response:
 Conversation History:
 {conversation_context}
 
-Please use the conversation history to understand the context of follow-up questions. If this is a follow-up question, refer back to previous messages to provide a coherent answer."""
+Use the conversation history to handle follow-up questions. If this is a follow-up, refer back to previous messages to give a coherent answer."""
         
         prompt += """
 
-Please provide a clear, concise, and helpful answer to the user's question based on the information above.
+Provide a clear, concise answer to the user's question based on the information above.
 
-IMPORTANT FORMATTING RULES:
-- Do NOT use markdown formatting like ### (headers) or ** (bold text)
-- Do NOT use asterisks, hashes, or other markdown symbols
-- Use plain text only - the output will be displayed in Slack
-- Keep the font consistent throughout
-- Use simple line breaks and spacing for structure
-- If the response contains code, format it as plain text code blocks or inline code only
+FORMATTING (for Slack, plain text only):
+- No markdown: no ### headers, ** bold, or asterisks/hashes/backticks for formatting.
+- Use line breaks and spacing for structure. For code references: plain text or inline only; do not wrap in backticks.
 
-If there are any issues or the response is unclear, please explain that as well."""
+If the response is unclear or incomplete, say so and explain what you can infer."""
 
         # Make API call to AI service
         # Note: Works with both Gemini (via base_url) and OpenAI (default base_url)
