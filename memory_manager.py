@@ -12,11 +12,9 @@ class MemoryManager:
         self.conversations = {}  # session_id -> list of messages
         self.max_messages = max_messages
 
-    def get_session_id(self, user_id: str, channel_id: str, thread_ts: str = None) -> str:
-        if not thread_ts:
-            # Use channel_id as thread identifier for non-threaded conversations
-            thread_ts = channel_id
-        return f"{user_id}:{channel_id}:{thread_ts}"
+    def get_session_id(self, thread_ts: str) -> str:
+        """Session is keyed by thread only so everyone in the same thread shares context."""
+        return str(thread_ts)
 
     def get_context(self, session_id: str) -> list:
         return self.conversations.get(session_id, [])
