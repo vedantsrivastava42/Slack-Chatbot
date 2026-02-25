@@ -19,11 +19,61 @@ gemini_client = OpenAI(
 
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "models/gemini-flash-latest")
 
-def process_with_ai(raw_response: str, user_query: str, conversation_context: str = None) -> str:
-
+def process_with_ai(raw_response: str, user_query: str, conversation_context: str = None, mode: str = None) -> str:
+    """mode: None = default (product/stakeholder). 'oncall' = fix guide for dev (steps, files/functions, todo)."""
     try:
-        # Build base prompt
-        prompt = f"""You are a helpful code assistant. A user asked: "{user_query}"
+        if mode == "oncall":
+            prompt = f"""
+You are formatting a concise fix guide for a developer handling an oncall or production issue.
+
+Brevity rules (strict):
+- STEPS TO FIX: Max 5-6 steps. 1-2 lines per step. Put the most likely fix first; edge-case checks last.
+- FILES AND FUNCTIONS TO CHECK: Max 4–5 entries. Only files the dev must open; one line each (path + function/method + why it matters).
+- TODO: Max 4 items. Only actions the dev must do (e.g. confirm X, run Y, check Z). Omit "identify" if obvious from steps.
+- Put "Add Sentry / logging" or similar tech-debt items in a short FOLLOW-UP section at the end, not in the main steps.
+
+Structure: (1) STEPS TO FIX, (2) FILES AND FUNCTIONS TO CHECK, (3) TODO, (4) optional FOLLOW-UP (one line). Use actual file paths and function names.
+If the codebase tool asked a clarifying question, pass that question to the user as your response instead.
+
+A user asked: "{user_query}"
+
+The codebase query tool returned the following response:
+
+{raw_response}"""
+        else:
+            # Default: product/stakeholder flow
+            prompt = f"""
+You are a code-aware assistant for non-technical, product-focused stakeholders.
+
+Goal:
+Explain the system behavior described below in plain language.
+Do NOT show code or implementation details.
+If the codebase query tool (cursor) has asked the user a clarifying question back, ask that question to the user again as your response.
+
+Two-tier rule (decide silently before answering):
+
+Use TIER_2 ONLY if the user explicitly asks for detail (e.g. "elaborate", "explain in detail", "step-by-step", "full flow", "conditions").
+Otherwise, always use TIER_1.
+
+TIER_1 (default):
+- Brief and direct (max ~4-6 sentences)
+- Main takeaway only
+- No steps, no conditions, no branching logic
+- Do NOT mention API / endpoint / service names
+
+TIER_2 (on request):
+- Step-by-step flow in correct order
+- Conditions and branching allowed
+- Explain when and why steps happen
+- Mention API / endpoint / service names when relevant; for each, give a one-line explanation of what it does
+- Still no code
+
+Always:
+- Describe behavior as system actions, not code
+- Avoid phrases like “the code does” or “this function”
+- Do not mix TIER_1 and TIER_2 styles
+
+A user asked: "{user_query}"
 
 The codebase query tool returned the following response:
 
@@ -36,21 +86,22 @@ The codebase query tool returned the following response:
 Conversation History:
 {conversation_context}
 
-Please use the conversation history to understand the context of follow-up questions. If this is a follow-up question, refer back to previous messages to provide a coherent answer."""
+Use the conversation history to handle follow-up questions. If this is a follow-up, refer back to previous messages to give a coherent answer."""
         
-        prompt += """
+        if mode == "oncall":
+            prompt += """
 
-Please provide a clear, concise, and helpful answer to the user's question based on the information above.
+Output: Plain text only (no markdown). Line breaks and spacing for structure. Keep the whole guide scannable in under 1-2 minutes. If the response is unclear or incomplete, say so and give the best guidance you can."""
+        else:
+            prompt += """
 
-IMPORTANT FORMATTING RULES:
-- Do NOT use markdown formatting like ### (headers) or ** (bold text)
-- Do NOT use asterisks, hashes, or other markdown symbols
-- Use plain text only - the output will be displayed in Slack
-- Keep the font consistent throughout
-- Use simple line breaks and spacing for structure
-- If the response contains code, format it as plain text code blocks or inline code only
+Provide a clear, concise answer to the user's question based on the information above.
 
-If there are any issues or the response is unclear, please explain that as well."""
+FORMATTING (for Slack, plain text only):
+- No markdown: no ### headers, ** bold, or asterisks/hashes/backticks for formatting.
+- Use line breaks and spacing for structure. For code references: plain text or inline only; do not wrap in backticks.
+
+If the response is unclear or incomplete, say so and explain what you can infer."""
 
         # Make API call to AI service
         # Note: Works with both Gemini (via base_url) and OpenAI (default base_url)

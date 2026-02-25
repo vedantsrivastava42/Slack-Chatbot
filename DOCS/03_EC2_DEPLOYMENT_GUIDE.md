@@ -140,6 +140,38 @@ journalctl -u slack-bot -f
 
 ---
 
+## Cron: auto-pull and cursor-agent
+
+If you use cron to pull the repo (e.g. `git pull` on a schedule), and cursor-agent is run from cron or from a non-interactive session, you may see:
+
+```text
+Workspace Trust Required
+Cursor Agent can execute code and access files in this directory.
+Do you trust the contents of this directory?
+...
+To proceed, you can either:
+  • Run 'agent' interactively to decide
+  • Pass --trust, --yolo, or -f if you trust this directory
+```
+
+**If you see this:** run the agent with trust for that run:
+
+```bash
+cursor-agent --trust
+# or
+cursor-agent -f
+```
+
+If the agent is invoked from a **cron job**, add `--trust` (or `-f`) to the command so the job doesn’t block, e.g.:
+
+```bash
+cursor-agent --trust "your instruction"
+```
+
+Trust is per environment; runs from cron don’t use the same “trusted” state as Cursor IDE, so the flag is needed for non-interactive runs.
+
+---
+
 ## Why this is EC2 (important note)
 
 * cursor-agent:

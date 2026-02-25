@@ -42,11 +42,9 @@ def process_query(event, say, query: str, empty_query_message: str, reaction_emo
         say(empty_query_message)
         return
 
-    # Generate session ID for this conversation
-    user_id = event.get("user", "")
-    channel_id = event.get("channel", "")
+    # Generate session ID from thread only (everyone in same thread shares context)
     thread_ts = event.get("thread_ts") or event.get("ts")
-    session_id = memory_manager.get_session_id(user_id, channel_id, thread_ts)
+    session_id = memory_manager.get_session_id(thread_ts)
     
     # Store user message in memory
     memory_manager.add_message(session_id, "user", query)
