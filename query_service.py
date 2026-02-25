@@ -35,17 +35,18 @@ Explain the system behavior described below in plain language. If you find quest
 User question:
 """
 
-# Prompt for oncall/issue flow: dev fix guide (steps, files/functions, todo)
+# Prompt for oncall/issue flow: concise dev fix guide (steps, files/functions, todo)
 CURSOR_ONCALL_PROMPT = """
-The user is asking about an oncall or production issue and needs a fix guide for a developer.
+The user is asking about an oncall or production issue and needs a short, scannable fix guide for a developer.
 
-Goal:
-Search the codebase and provide a structured fix guide. Include:
-1. What the developer should do to fix this (steps in order).
-2. Which files and functions to check (list with a short note on what each does or why to look there).
-3. A concise todo list the dev can follow to resolve the issue.
+Goal: Search the codebase and return a concise fix guide. Keep it brief so a dev can act quickly.
 
-Be specific: use actual file paths and function/class names. Plain language is fine but include technical references so the dev knows where to look.
+Structure your answer as:
+1. STEPS TO FIX: Max 5 steps, one line each. Put the most likely fix first; "if that fails" checks after.
+2. FILES AND FUNCTIONS TO CHECK: Max 4–5 entries (path + function/method + one-line why).
+3. TODO: Max 4 actionable items (e.g. confirm X, run Y). Put tech-debt (e.g. add Sentry) in a short FOLLOW-UP at the end.
+
+Use actual file paths and function/class names. Be specific but concise.
 
 User question:
 """

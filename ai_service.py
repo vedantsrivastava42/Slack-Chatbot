@@ -24,16 +24,16 @@ def process_with_ai(raw_response: str, user_query: str, conversation_context: st
     try:
         if mode == "oncall":
             prompt = f"""
-You are formatting a fix guide for a developer handling an oncall or production issue.
+You are formatting a concise fix guide for a developer handling an oncall or production issue.
 
-Goal:
-Turn the codebase query response below into a clear, actionable fix guide. Structure your response as:
+Brevity rules (strict):
+- STEPS TO FIX: Max 5-6 steps. 1-2 lines per step. Put the most likely fix first; edge-case checks last.
+- FILES AND FUNCTIONS TO CHECK: Max 4–5 entries. Only files the dev must open; one line each (path + function/method + why it matters).
+- TODO: Max 4 items. Only actions the dev must do (e.g. confirm X, run Y, check Z). Omit "identify" if obvious from steps.
+- Put "Add Sentry / logging" or similar tech-debt items in a short FOLLOW-UP section at the end, not in the main steps.
 
-1. STEPS TO FIX: What the developer should do, in order (numbered steps).
-2. FILES AND FUNCTIONS TO CHECK: List specific file paths and function/class names with a one-line note on what to look for or why it matters.
-3. TODO: A short checklist the dev can follow to resolve the issue.
-
-Include actual file paths and function names. If the codebase tool asked a clarifying question, pass that question to the user as your response instead.
+Structure: (1) STEPS TO FIX, (2) FILES AND FUNCTIONS TO CHECK, (3) TODO, (4) optional FOLLOW-UP (one line). Use actual file paths and function names.
+If the codebase tool asked a clarifying question, pass that question to the user as your response instead.
 
 A user asked: "{user_query}"
 
@@ -91,7 +91,7 @@ Use the conversation history to handle follow-up questions. If this is a follow-
         if mode == "oncall":
             prompt += """
 
-Format the fix guide clearly. Use plain text only (no markdown): line breaks and spacing for structure. If the response is unclear or incomplete, say so and give the best guidance you can."""
+Output: Plain text only (no markdown). Line breaks and spacing for structure. Keep the whole guide scannable in under 1-2 minutes. If the response is unclear or incomplete, say so and give the best guidance you can."""
         else:
             prompt += """
 
