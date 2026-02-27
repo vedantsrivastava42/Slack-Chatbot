@@ -4,6 +4,7 @@ Integrates with Slack to answer codebase queries
 """
 
 import os
+import json
 import ssl
 import certifi
 from slack_bolt import App
@@ -17,6 +18,7 @@ load_dotenv()
 
 SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
 SLACK_APP_TOKEN = os.getenv("SLACK_APP_TOKEN")
+CLICKUP_SLACK_CHANNEL_ID = os.getenv("CLICKUP_SLACK_CHANNEL_ID")
 
 if not SLACK_BOT_TOKEN or not SLACK_APP_TOKEN:
     raise ValueError("SLACK_BOT_TOKEN and SLACK_APP_TOKEN must be set in environment variables")
@@ -107,20 +109,48 @@ def handle_app_mention(event, say):
 # Handle direct messages to the bot (DMs)
 @app.event("message")
 def handle_message(event, say):
-    """Handle direct messages to the bot"""
+    """Handle direct messages and ClickUp channel: auto-answer on new task messages."""
+    channel = event.get("channel", "")
+
+    # ClickUp-integrated channel: any new message (e.g. from ClickUp bot) triggers the bot
+    if CLICKUP_SLACK_CHANNEL_ID and channel == CLICKUP_SLACK_CHANNEL_ID:
+        print("CLICKUP_EVENT:", json.dumps(event, default=str, indent=2))
+        query = (event.get("text") or "").strip()
+        if not query:
+            try:
+                say(text="No task description to answer.", thread_ts=event["ts"])
+            except Exception:
+                pass
+            return
+        try:
+            process_query(
+                event=event,
+                say=say,
+                query=query,
+                empty_query_message="No task description to answer.",
+                reaction_emoji="eyes",
+                use_thread=True,
+            )
+        except Exception as e:
+            try:
+                say(text=f"Sorry, I encountered an error: {str(e)}", thread_ts=event["ts"])
+            except Exception:
+                pass
+        return
+
+    # DMs only: ignore bot messages and non-DM channels
     if event.get("bot_id") or (event.get("subtype") and event.get("subtype") != "message_changed"):
         return
-    
+
     channel_type = event.get("channel_type")
-    channel = event.get("channel", "")
     is_dm = channel_type == "im" or (channel and channel.startswith("D"))
-    
+
     if not is_dm:
         return
-    
+
     try:
         query = event.get("text", "").strip()
-        
+
         process_query(
             event=event,
             say=say,

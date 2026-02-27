@@ -62,6 +62,15 @@ We propose building a **Slack-based AI Assistant** with the following capabiliti
 
 The solution focuses on **information retrieval and synthesis**, providing answers with citations to specific files and lines of code.
 
+### 4.1 ClickUp channel auto-reply
+
+When a Slack channel is integrated with ClickUp, new on-call tasks posted to that channel can trigger the bot automatically (no @mention required). For the configured channel (`CLICKUP_SLACK_CHANNEL_ID`):
+
+*   **Trigger:** Any new message in that channel (e.g. from the ClickUp app) is treated as a task.
+*   **Query:** The message plain text (task title + description) is used as the question.
+*   **Reply:** The bot answers in a **thread** under the ClickUp message.
+*   **Config:** Set `CLICKUP_SLACK_CHANNEL_ID` to the Slack channel ID (e.g. `C0AH7795CBX`). If unset, this behavior is disabled.
+
 ---
 
 ## 5. Target Users & Use-Case Categories
