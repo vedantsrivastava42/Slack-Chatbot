@@ -172,3 +172,92 @@ The bot will:
   - Check your internet connection
   - Verify the app token has `connections:write` scope
 
+---
+
+## Appendix: OAuth Scopes & Events Reference
+
+Configured under **OAuth & Permissions** → **Bot Token Scopes**. Add scopes, then **Install to Workspace** (or **Reinstall**).  
+Events configured under **Event Subscriptions** → **Subscribe to bot events**. Add events, then **Save Changes** (no reinstall needed).
+
+---
+
+### OAuth Scopes — Read Permissions
+
+*View messages and metadata. Required to receive and process incoming messages.*
+
+| Scope | Meaning | Applies to | When needed |
+|-------|---------|------------|-------------|
+| **`app_mentions:read`** | View messages that @mention your bot | All (channels, DMs) | **Always** – for @mention flow |
+| **`channels:history`** | View message history in public channels | Public channels | When bot reads messages in public channels |
+| **`channels:read`** | View basic info (name, etc.) about public channels | Public channels | Optional – for channel metadata |
+| **`groups:history`** | View message history in private channels | Private channels | When bot reads messages in private channels (incl. "message without mention") |
+| **`groups:read`** | View basic info about private channels | Private channels | Optional – for channel metadata |
+| **`im:history`** | View message history in DMs | DMs (1-on-1) | When bot handles DMs |
+| **`im:read`** | View basic info about DMs | DMs (1-on-1) | When bot handles DMs |
+| **`mpim:history`** | View message history in group DMs | Group DMs | When bot is in group DMs |
+| **`reactions:read`** | View emoji reactions on messages | All | Optional – only if bot needs to read reactions |
+
+---
+
+### OAuth Scopes — Write Permissions
+
+*Send messages and add reactions. Required for the bot to reply.*
+
+| Scope | Meaning | Applies to | When needed |
+|-------|---------|------------|-------------|
+| **`chat:write`** | Send messages as the bot (channels, threads, DMs) | All | **Always** – bot must be able to reply |
+| **`reactions:write`** | Add and remove emoji reactions | All | **Recommended** – for processing indicator (e.g. eyes, hourglass) |
+| **`im:write`** | Start and send direct messages | DMs only | When bot handles DMs |
+
+---
+
+### OAuth Scopes — Chat / Message Summary
+
+| Action | Scope | Conversation types |
+|--------|-------|---------------------|
+| **Read** messages | `channels:history`, `groups:history`, `im:history`, `mpim:history` | Public, private, DM, group DM |
+| **Send** messages | `chat:write` | All |
+| **Send** DMs (open conversation) | `im:write` | DMs only |
+| **Read** @mentions | `app_mentions:read` | All |
+
+---
+
+### Event Subscriptions — Message Events
+
+*Slack sends these events when messages are posted. Add the ones you need.*
+
+| Event | Meaning | Conversation type | When needed |
+|-------|---------|-------------------|-------------|
+| **`app_mention`** | User @mentions your bot | Any (channels, DMs) | **Always** – for @mention flow |
+| **`message.channels`** | Any message in a public channel the bot is in | Public channels | When bot responds to messages without @mention in public channels |
+| **`message.groups`** | Any message in a private channel the bot is in | Private channels | When bot responds to messages without @mention in private channels (set `CLICKUP_SLACK_CHANNEL_ID`) |
+| **`message.im`** | Any message in a DM with the bot | DMs (1-on-1) | When bot handles DMs |
+| **`message.mpim`** | Any message in a group DM the bot is in | Group DMs | When bot is in group DMs |
+
+**Note:** `app_mention` fires only when the bot is @mentioned. `message.*` events fire for **all** messages (with or without mention) in that conversation type.
+
+---
+
+### Scope vs Event Mapping
+
+| Conversation type | Read scope | Write scope | Bot event |
+|------------------|------------|-------------|-----------|
+| Public channel | `channels:history` | `chat:write` | `message.channels` |
+| Private channel | `groups:history` | `chat:write` | `message.groups` |
+| DM (1-on-1) | `im:history`, `im:read` | `im:write`, `chat:write` | `message.im` |
+| Group DM | `mpim:history` | `chat:write` | `message.mpim` |
+
+*`app_mention` and `app_mentions:read` apply to all types when the bot is @mentioned.*
+
+---
+
+### Quick Reference — Minimal Setups
+
+| Setup | OAuth scopes | Bot events |
+|-------|--------------|------------|
+| **Private channel only, @mention only** | `app_mentions:read`, `groups:history`, `groups:read`, `chat:write`, `reactions:write` | `app_mention` |
+| **Private channel, message without mention** | Same as above | `app_mention`, `message.groups` + `CLICKUP_SLACK_CHANNEL_ID` in `.env` |
+| **+ DMs** | Add `im:history`, `im:read`, `im:write` | Add `message.im` |
+| **+ Public channels** | Add `channels:history` | Add `message.channels` (if no-mention in public) |
+| **+ Group DMs** | Add `mpim:history` | Add `message.mpim` |
+
