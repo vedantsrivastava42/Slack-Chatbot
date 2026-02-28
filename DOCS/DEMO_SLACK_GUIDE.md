@@ -40,7 +40,8 @@ Minimal setup so your manager can test the bot in **one private channel** only. 
 1. Left sidebar → **Event Subscriptions**.
 2. Turn **Enable Events** ON.
 3. Under **Subscribe to bot events**, add:
-   - **`app_mention`**
+   - **`app_mention`** — Bot responds when @mentioned.
+   - **`message.groups`** — Bot can respond to messages without @mention in the private channel (see Section 7).
 4. **Save Changes**.
 
 ---
@@ -63,6 +64,8 @@ SLACK_APP_TOKEN=xapp-your-app-token
 GEMINI_API_KEY=your-gemini-key
 GEMINI_MODEL=models/gemini-flash-latest
 DEFAULT_REPOSITORY_PATH=/path/to/your/codebase
+# Optional: bot replies to every message (no @mention) in this channel. See Section 7.
+# CLICKUP_SLACK_CHANNEL_ID=C0xxxxxxxxx
 ```
 
 2. Install deps and run:
@@ -77,6 +80,24 @@ python slack_bot.py
 
 ---
 
+## 7. (Optional) Reply to messages without @mention
+
+If you want the bot to respond to **every message** in the private channel (not only when @mentioned):
+
+1. **Add the event** (if you skipped it in Section 4):
+   - **Event Subscriptions** → **Subscribe to bot events** → add **`message.groups`** → **Save Changes**.
+
+2. **Get the private channel ID**:
+   - In Slack, right-click the private channel in the sidebar → **View channel details** (or open the channel and check the browser URL; the ID is the part after the workspace, e.g. `C0AH7795CBX`).
+
+3. **Set it in `.env`**:
+   - Add in your `.env`: `CLICKUP_SLACK_CHANNEL_ID=C0xxxxxxxxx` (replace with your channel ID).
+   - Restart the bot (`python slack_bot.py`).
+
+4. **Test**: Post a normal message in that channel (no @mention). The bot should reply in a thread. No new scopes are required (you already have `groups:history`, `chat:write`, `reactions:write`).
+
+---
+
 ## Adding other permissions later
 
 When you want to enable more than the private channel:
@@ -85,10 +106,11 @@ When you want to enable more than the private channel:
 2. If you add new event types, go to **Event Subscriptions** → **Subscribe to bot events** and add the matching events.
 3. Reinstall: **OAuth & Permissions** → **Install to Workspace** → **Allow** (so the new scopes take effect).
 
-| If you want…           | Add these Bot Scopes        | Add these Bot Events  |
-|------------------------|-----------------------------|------------------------|
-| Public channel mentions| `channels:history`          | (none; `app_mention` already covers it) |
-| Direct messages (DMs)  | `im:history`, `im:read`, `im:write` | `message.im`   |
-| Group DMs              | `mpim:history`              | `message.mpim`         |
+| If you want…                          | Add these Bot Scopes        | Add these Bot Events  |
+|---------------------------------------|-----------------------------|------------------------|
+| Message without @mention (private ch.)| (none; already have groups) | `message.groups`       |
+| Public channel mentions               | `channels:history`          | (none; `app_mention` already covers it) |
+| Direct messages (DMs)                 | `im:history`, `im:read`, `im:write` | `message.im`   |
+| Group DMs                             | `mpim:history`              | `message.mpim`         |
 
 After adding scopes/events, run **Install to Workspace** again, then invite the bot to the new channel or open a DM as needed.
